@@ -1,4 +1,4 @@
-interface AstLocation {
+export interface AstLocation {
   start?: {
     offset?: number
     line?: number
@@ -17,11 +17,17 @@ interface AstLocatable {
   children(): AstLocatable[]
 }
 
-class AstNode implements AstLocatable {
+interface GeneratorInterface {
+  render(n: AstNode): null
+}
+
+export class AstNode implements AstLocatable {
+  _type: string
   _location: AstLocation
   _parent: AstNode | undefined
   _children: AstNode[]
   constructor(location: AstLocation, children: AstNode[]) {
+    this._type = 'base'
     this._location = location
     this._parent = undefined
     this._children = children
@@ -41,16 +47,8 @@ class AstNode implements AstLocatable {
   children(): AstLocatable[] {
     return this._children
   }
-}
 
-export class TikzRoot extends AstNode {
-  _inline: boolean = false
-  _options: AstNode[]
-  _content: AstNode
-  constructor(location: AstLocation, inline: boolean, option_list: AstNode, content: AstNode) {
-    super(location, [option_list, content])
-    this._inline = inline
-    this._options = [...option_list.children()] as AstNode[]
-    this._content = content
+  render<GeneratorType extends GeneratorInterface>(g: GeneratorType) {
+    g.render(this)
   }
 }

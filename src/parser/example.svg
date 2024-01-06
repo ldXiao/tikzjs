@@ -1,0 +1,80 @@
+<svg data-table="true" viewBox="3385.8 -2511.6 1 4523.2" xmlns="http://www.w3.org/2000/svg" width="15.157ex"
+  height="10.233ex"
+  data-eqn="\begin{align} \boldsymbol{F}&amp;=-\frac{GMm}{r^2}\,\hat{\boldsymbol{r}}\nonumber\\&amp;=-\frac{GMm}{r^3}\,\boldsymbol{r}\label{newtgrav} \end{align}"
+  aria-label="StartLayout 1st Row 1st Column bold italic upper F 2nd Column equals minus StartFraction upper G upper M m Over r squared EndFraction ModifyingAbove bold italic r With caret 2nd Row  with Label left parenthesis 2 right parenthesis EndLabel 1st Column Blank 2nd Column equals minus StartFraction upper G upper M m Over r cubed EndFraction bold italic r EndLayout"
+  role="math" style="vertical-align: -4.551ex;">
+  <g transform="scale(1,-1) ">
+    <g data-mml-node="mtr" transform="translate(0,1130.6)">
+      <g data-mml-node="mtd"><text font-size="1000" transform="scale(1,-1)" class="MJMathBoldItalic" data-c="1D46D"
+          data-mml-node="mi">F</text></g>
+      <g data-mml-node="mtd" transform="translate(809,0)">
+        <g data-mml-node="mrow">
+          <g data-mml-node="mo" transform="translate(277.8,0)">
+            <path id="MJX-TEX-N-3D"
+              d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z">
+            </path>
+          </g>
+          <g data-mml-node="mrow" transform="translate(1333.6,0)">
+            <g data-mml-node="mo">
+              <path id="MJX-TEX-N-2212" d="M84 237T84 250T98 270H679Q694 262 694 250T679 230H98Q84 237 84 250Z"></path>
+            </g>
+            <g data-mml-node="mrow" transform="translate(778,0)">
+              <g data-mml-node="mfrac">
+                <g data-mml-node="mrow" transform="translate(220,676)"><text font-size="1000" transform="scale(1,-1)"
+                    class="MJMath" data-c="1D43A" data-mml-node="mi">G</text><text font-size="1000"
+                    transform="translate(786,0) scale(1,-1)" class="MJMath" data-c="1D440"
+                    data-mml-node="mi">M</text><text font-size="1000" transform="translate(1837,0) scale(1,-1)"
+                    class="MJMath" data-c="1D45A" data-mml-node="mi">m</text></g>
+                <g data-mml-node="msup" transform="translate(1133.7,-719.9)"><text font-size="1000"
+                    transform="scale(1,-1)" class="MJMath" data-c="1D45F" data-mml-node="mi">r</text><text
+                    font-size="1000" transform="translate(484,289) scale(0.707) scale(1,-1)" class="MJMainRegular"
+                    data-c="32" data-mml-node="mn">2</text></g>
+                <rect width="2915" height="60" x="120" y="220"></rect>
+              </g>
+              <g data-mml-node="mstyle" transform="translate(3155,0)"></g>
+              <g data-mml-node="TeXAtom" data-mjx-texclass="ORD" transform="translate(3322,0)">
+                <g data-mml-node="mover"><text font-size="1000" transform="scale(1,-1)" class="MJMathBoldItalic"
+                    data-c="1D493" data-mml-node="mi">r</text><text font-size="1000"
+                    transform="translate(328.4,26) translate(-250 0) scale(1,-1)" class="MJMainRegular" data-c="5E"
+                    data-mml-node="mo">^</text></g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g data-mml-node="mlabeledtr" transform="translate(0,-1281.4)">
+      <g data-mml-node="mtd" transform="translate(809,0)">
+        <g data-mml-node="mrow">
+          <g data-mml-node="mo" transform="translate(277.8,0)">
+            <path id="MJX-TEX-N-3D"
+              d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z">
+            </path>
+          </g>
+          <g data-mml-node="mrow" transform="translate(1333.6,0)">
+            <g data-mml-node="mo">
+              <path id="MJX-TEX-N-2212" d="M84 237T84 250T98 270H679Q694 262 694 250T679 230H98Q84 237 84 250Z"></path>
+            </g>
+            <g data-mml-node="mrow" transform="translate(778,0)">
+              <g data-mml-node="mfrac">
+                <g data-mml-node="mrow" transform="translate(220,676)"><text font-size="1000" transform="scale(1,-1)"
+                    class="MJMath" data-c="1D43A" data-mml-node="mi">G</text><text font-size="1000"
+                    transform="translate(786,0) scale(1,-1)" class="MJMath" data-c="1D440"
+                    data-mml-node="mi">M</text><text font-size="1000" transform="translate(1837,0) scale(1,-1)"
+                    class="MJMath" data-c="1D45A" data-mml-node="mi">m</text></g>
+                <g data-mml-node="msup" transform="translate(1133.7,-719.2)"><text font-size="1000"
+                    transform="scale(1,-1)" class="MJMath" data-c="1D45F" data-mml-node="mi">r</text><text
+                    font-size="1000" transform="translate(484,289) scale(0.707) scale(1,-1)" class="MJMainRegular"
+                    data-c="33" data-mml-node="mn">3</text></g>
+                <rect width="2915" height="60" x="120" y="220"></rect>
+              </g>
+              <g data-mml-node="mstyle" transform="translate(3155,0)"></g><text font-size="1000"
+                transform="translate(3322,0) scale(1,-1)" class="MJMathBoldItalic" data-c="1D493"
+                data-mml-node="mi">r</text>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

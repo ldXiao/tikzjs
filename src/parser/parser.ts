@@ -1,4 +1,4 @@
-import { SyntaxError, parse as _parse } from './tikzjs'
+import { parse as _parse } from './_tikzjs'
 
 export class Parser {
   name: 'parser' = 'parser'
