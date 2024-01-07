@@ -25,17 +25,19 @@ tikzpicturetail
   = end lbrace ('tikzpicture'/'tikzjspicture') rbrace
 
 tikzoption 
-  = lbracket list:option_list_gl rbracket { return list; }
+  = lbracket list:option_list rbracket { return list; }
   / ws { return []; }
 
-option_list_gl "global option list" 
-  = x:(option_gl|.., comma|) comma? { return x; }
+option_list "option list" 
+  = x:(option|.., comma|) comma? { return x; }
 
-option_gl "global option"
-  = gbo:bool_option_gl { return gbo; }// TODO add global override option
+option "global option"
+  = b:bool_option { return ft.tikzOption(location(), b); }// TODO add  override option
+  // / ov: override_option
 
-bool_option_gl "global bool option" //TODO add more global options
- = opt:'option' { return new ft.tikzLiteral(location(), opt); } 
+
+bool_option "global bool option" //TODO add more options
+  = 'draw'
 
 tikzcontent
   = ws list:statement_list ws { return list; }
@@ -59,28 +61,35 @@ end
 ////////////////// COORDINATE SPEC ///////////////////////////
 
 path_coordinate
-  = ws (
-    coordinate
-  / plus coordinate 
-  / plusplus coordinate
-  ) ws
+  = c:coordinate { return new ft.tikzCoordinate(location(), c.offset_list,'' ,c.cs_type); }
+  / plus c:coordinate { return new ft.tikzCoordinate(location(), c.offset_list,'+' ,c.cs_type); }
+  / plusplus c:coordinate { return new ft.tikzCoordinate(location(), c.offset_list,'++' ,c.cs_type); }
 
 coordinate
-  = coordinate_canvas / coordinate_canvas_polar // TODO add coordinate_xyz etc
+  = coordinate_canvas 
+  / coordinate_canvas_polar
+  // TODO add coordinate_xyz etc
 
 coordinate_canvas
-  = lpar x:offset_expr comma y:offset_expr rpar  
-  / lpar 'canvas cs' colon 'x' eq x_:offset_expr comma 'y' eq y_:offset_expr rpar
+  = lpar x:offset_expr comma y:offset_expr rpar  { return {'offset_list': [x, y], "cs_type": 'canvas'}; }
+  / lpar 'canvas cs' colon 'x' eq x_:offset_expr comma 'y' eq y_:offset_expr rpar { return {'offset_list': [x_, y_], "cs_type": 'canvas'}; }
 
 coordinate_canvas_polar
-  = lpar angle:number colon radius:offset_expr rpar
-  / lpar 'canvas polar cs' colon 'angle' eq angle_:number comma 'radius'  eq radius_:offset_expr rpar
+  = lpar angle:offset_expr colon radius:offset_expr rpar { return {'offset_list': [angle, radius], "cs_type": 'ploar'}; }
+  / lpar 'canvas polar cs' colon 'angle' eq angle_:offset_expr comma 'radius' eq radius_:offset_expr rpar { return {'offset_list': [angle_, radius_], "cs_type": 'ploar'}; }
 
 offset_expr
-  = number/ number unit
+  = n:number ws u:unit ws { return new ft.tikzCoordinateOffset(location(), n, u); }
+  / n:number { return new ft.tikzCoordinateOffset(location(), n); }
 
 
-unit = "cm"/ "mm" / "pt" / "ex"
+unit 
+  = "cm"
+  / "mm" 
+  / "pt" 
+  / "ex"
+  / "rm"
+  / "deg"
 
 //////////////////// PATH SPEC ////////////////////////
 statement_list
@@ -91,7 +100,7 @@ statement
   // \ foreach_statement
 
 path_statement
-  = path_head tikzoption operation_list semicolon
+  = h:path_head opt:tikzoption opr:operation_list semicolon { return new ft.tikzPath(location(), h, opt, opr); }
 
 path_head 
   = '\\path'
@@ -110,8 +119,8 @@ operation_list
   = list:(path_operation|.., ws|) { return list; }
 
 path_operation
-  = path_coordinate
-  / line_operation
+  = c:path_coordinate { return c; }
+  / l:line_operation { return l; }
   // / curve_operation
   // / topath_operation
   // / node_operation
@@ -124,9 +133,9 @@ path_operation
   // / let_operation
 
 line_operation
-  = streight_line_operation
-  / hv_corner_operation "horizontal_vertical corner"
-  / vh_corner_operation "vertical_horizental corner"
+  = streight_line_operation { return new ft.tikzLineOperation(location(), '--'); }
+  / hv_corner_operation { return new ft.tikzLineOperation(location(), '-|'); }
+  / vh_corner_operation { return new ft.tikzLineOperation(location(), '|-'); }
 
 streight_line_operation
   = ws '--' ws

@@ -17,10 +17,6 @@ interface AstLocatable {
   children(): AstLocatable[]
 }
 
-interface GeneratorInterface {
-  render(n: AstNode): null
-}
-
 export class AstNode implements AstLocatable {
   _type: string
   _location: AstLocation

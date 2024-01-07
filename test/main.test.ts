@@ -1,7 +1,7 @@
 import { runWorker } from '../src/main'
 import { TikzRoot } from '../src/parser/TikzRoot'
 
-const getCircularReplacer = () => {
+const beautifyReplacer = () => {
   const seen = new WeakSet()
   return (key: string, value: any) => {
     if (typeof value === 'object' && value !== null) {
@@ -20,16 +20,46 @@ const getCircularReplacer = () => {
   }
 }
 
-const factory = require('../src/parser/factory').default
+const tabsize = 2
 
-test('simple_test_1', () => {
-  const result = new factory.tikzRoot({}, [])
-  console.log(result instanceof TikzRoot)
+test('empty_tikz_test', () => {
+  const result = runWorker('\\tikz{}')
+  console.log(JSON.stringify(result, beautifyReplacer(), tabsize))
   expect(result)
 })
 
-test('simple_test', () => {
-  const result = runWorker('\\tikz{}')
-  console.log(JSON.stringify(result, getCircularReplacer(), 2))
+test('empty_tikz_test_1', () => {
+  const result = runWorker('\\tikz[]{}')
+  console.log(JSON.stringify(result, beautifyReplacer(), tabsize))
+  expect(result)
+})
+
+test('empty_tikzpicture_test', () => {
+  const result = runWorker('\\begin{tikzpicture}\\end{tikzpicture}')
+  console.log(JSON.stringify(result, beautifyReplacer(), tabsize))
+  expect(result)
+})
+
+test('empty_tikzpicture_test_1', () => {
+  const result = runWorker('\\begin{tikzpicture}[]\\end{tikzpicture}')
+  console.log(JSON.stringify(result, beautifyReplacer(), tabsize))
+  expect(result)
+})
+
+test('path_null_test', () => {
+  const result = runWorker('\\begin{tikzpicture}[]\\path[draw];\\end{tikzpicture}')
+  console.log(JSON.stringify(result, beautifyReplacer(), tabsize))
+  expect(result)
+})
+
+test('path_--_test', () => {
+  const result = runWorker('\\begin{tikzpicture}[]\\path[draw](0,0)--(1,1);\\end{tikzpicture}')
+  console.log(JSON.stringify(result, beautifyReplacer(), tabsize))
+  expect(result)
+})
+
+test('path_-|_test', () => {
+  const result = runWorker('\\tikz[]{\\path[draw](0,0)-|++(1,1 cm);}')
+  console.log(JSON.stringify(result, beautifyReplacer(), tabsize))
   expect(result)
 })
