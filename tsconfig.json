@@ -1,7 +1,7 @@
 {
-  "include": ["src/**/*", "tests/**/*"],
+  "include": ["src/**/*"],
   "compilerOptions": {
-    "target": "es5",
+    "target": "es2017",
     "module": "commonjs",
     "allowJs": true,
     "outDir": "dist/",
@@ -11,6 +11,8 @@
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "typeRoots": ["./node_modules/@types"],
+    "skipLibCheck": true
   }
 }

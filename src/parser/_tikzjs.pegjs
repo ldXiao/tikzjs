@@ -1,13 +1,14 @@
 {
-  const ft = require('./factory.ts').default
+  const ft = require('./factory').default
   function err_not_impl(s) {
     return `${s} is not implemented`
   }
 }
 /////////////////////// Global //////////////////////////
-start 
-  = t:tikz { return new ft.tikzRoot(location(), [t]) } 
+start
+  = t:tikz { return new ft.tikzRoot(location(), [t]) }
   / p:tikzpicture { return new ft.tikzRoot(location(), [p]) }
+  / cd:tikzcd { return new ft.tikzRoot(location(), [cd]) }
 
 tikz  
   = tikzhead opt:tikzoption lbrace cnt:tikzcontent rbrace { return new ft.tikzInline(location(), opt, cnt); }
@@ -54,8 +55,83 @@ env_name // envs other than tikzjspicture tikzpicture
 begin
   = "\\begin"
 
-end 
+end
   = "\\end"
+
+///////////////////////// TIKZ-CD ///////////////////////////
+
+tikzcd
+  = "\\begin{tikzcd}" opts:tikzcdopts ws rows:tikzcd_rows ws "\\end{tikzcd}"
+    { return new ft.tikzCd(location(), opts, rows); }
+
+tikzcdopts
+  = lbracket list:tikzcd_option_list rbracket { return list; }
+  / ws { return []; }
+
+tikzcd_option_list
+  = items:(tikzcd_option|.., comma|) { return items; }
+
+tikzcd_option
+  = "column sep" ws "=" ws val:tikzcd_dim { return { key: 'columnSep', val }; }
+  / "row sep"    ws "=" ws val:tikzcd_dim { return { key: 'rowSep',    val }; }
+  / key:[a-zA-Z ]+ "=" val:[^\],]+ { return { key: key.join('').trim(), val: val.join('').trim() }; }
+  / name:[a-zA-Z ]+ { return { key: name.join('').trim(), val: true }; }
+
+tikzcd_dim
+  = n:number ws u:unit { return { value: n, unit: u }; }
+  / n:number            { return { value: n, unit: 'pt' }; }
+  / name:[a-z]+ { return name.join(''); }
+
+tikzcd_rows
+  = first:tikzcd_row rest:(ws "\\\\" ws "\n"? ws tikzcd_row)* (ws "\\\\")?
+    { return [first, ...rest.map(function(r){ return r[5]; })]; }
+
+tikzcd_row
+  = first:tikzcd_cell rest:(ws "&" ws tikzcd_cell)*
+    { return new ft.tikzCdRow(location(), [first, ...rest.map(function(r){ return r[3]; })]); }
+
+tikzcd_cell
+  = ws content:tikzcd_content ws arrows:tikzcd_arrow*
+    { return new ft.tikzCdCell(location(), content, arrows); }
+
+tikzcd_content
+  = "{" content:tikzcd_braced_content* "}" { return content.join(''); }
+  / content:tikzcd_bare_content { return content; }
+
+tikzcd_braced_content
+  = "{" inner:tikzcd_braced_content* "}" { return "{" + inner.join('') + "}"; }
+  / ch:[^{}] { return ch; }
+
+tikzcd_bare_content
+  = chars:(!tikzcd_stopper .)* { return chars.map(function(c){ return c[1]; }).join('').trim(); }
+
+tikzcd_stopper
+  = ws "&"
+  / ws "\\\\"
+  / ws "\\arrow"
+  / ws "\\end"
+
+tikzcd_arrow
+  = ws "\\arrow" ws "[" ws dir:tikzcd_dir opts:tikzcd_arrow_opts ws "]"
+    { return new ft.tikzCdArrow(location(), dir, opts); }
+
+tikzcd_dir
+  = chars:[rludURDL]+ { return chars.join('').toLowerCase(); }
+
+tikzcd_arrow_opts
+  = items:(ws "," ws tikzcd_arrow_opt)* { return items.map(function(i){ return i[3]; }); }
+
+tikzcd_arrow_opt
+  = '"' text:tikzcd_label_content* '"' prime:"'"?
+    { return { type: 'label', text: text.join(''), swap: prime === "'" }; }
+  / key:tikzcd_opt_word+ { return { type: 'opt', key: key.join('').trim() }; }
+
+tikzcd_label_content
+  = "{" inner:tikzcd_label_content* "}" { return "{" + inner.join('') + "}"; }
+  / ch:[^"{}] { return ch; }
+
+tikzcd_opt_word
+  = ch:(!("," / "]" / '"') .) { return ch[1]; }
 
 
 ////////////////// COORDINATE SPEC ///////////////////////////
@@ -83,11 +159,12 @@ offset_expr
   / n:number { return new ft.tikzCoordinateOffset(location(), n); }
 
 
-unit 
+unit
   = "cm"
-  / "mm" 
-  / "pt" 
+  / "mm"
+  / "pt"
   / "ex"
+  / "em"
   / "rm"
   / "deg"
 

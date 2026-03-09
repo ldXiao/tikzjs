@@ -44,7 +44,7 @@ export class AstNode implements AstLocatable {
     return this._children
   }
 
-  render<GeneratorType extends GeneratorInterface>(g: GeneratorType) {
+  render<GeneratorType extends { render(n: AstNode): unknown }>(g: GeneratorType) {
     g.render(this)
   }
 }

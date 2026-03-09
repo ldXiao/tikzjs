@@ -9,6 +9,10 @@ import {
   TikzLineOperation,
   TikzCoordinate,
   TikzCoordinateOffset,
+  TikzCd,
+  TikzCdRow,
+  TikzCdCell,
+  TikzCdArrow,
 } from './TikzRoot'
 
 const factory = {
@@ -22,6 +26,10 @@ const factory = {
   tikzPathOperation: TikzPathOperation,
   tikzLineOperation: TikzLineOperation,
   tikzOption: TikzOption,
+  tikzCd: TikzCd,
+  tikzCdRow: TikzCdRow,
+  tikzCdCell: TikzCdCell,
+  tikzCdArrow: TikzCdArrow,
 }
 
 export default factory
