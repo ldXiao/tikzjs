@@ -11,22 +11,22 @@ import {
 export interface SvgGeneratorOptions {
   /** Render a LaTeX string to an HTML string (e.g. using KaTeX). Falls back to plain text. */
   renderMath?: (latex: string) => string
-  /** Default column separation in pixels. Overridden by [column sep=...]. Default: 160 */
+  /** Default column separation in pixels. Overridden by [column sep=...]. Default: 60 */
   defaultColSep?: number
-  /** Default row separation in pixels. Overridden by [row sep=...]. Default: 100 */
+  /** Default row separation in pixels. Overridden by [row sep=...]. Default: 50 */
   defaultRowSep?: number
   /** Padding in pixels around the entire diagram. Default: 40 */
   margin?: number
-  /** Width of the foreignObject box for cell content. Default: 150 */
+  /** Width of the foreignObject box for cell content. Default: 180 */
   cellWidth?: number
-  /** Height of the foreignObject box for cell content. Default: 44 */
+  /** Height of the foreignObject box for cell content. Default: 48 */
   cellHeight?: number
-  /** Width of the foreignObject box for arrow labels. Default: 100 */
+  /** Width of the foreignObject box for arrow labels. Default: 130 */
   labelWidth?: number
   /** Height of the foreignObject box for arrow labels. Default: 28 */
   labelHeight?: number
-  /** Gap in px from cell centre to arrow start/end. Default: 28 */
-  arrowMargin?: number
+  /** Extra gap in px between node bounding box edge and arrow tip. Default: 6 */
+  arrowGap?: number
   /** Perpendicular offset in px for arrow labels. Default: 16 */
   labelOffset?: number
 }
@@ -43,7 +43,7 @@ function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
-function resolveUnit(val: TikzCdOption['val'], defaultPx: number): number {
+function resolveUnit(val: TikzCdOption['val'], defaultPx: number, emPx = 16): number {
   if (typeof val === 'boolean' || typeof val === 'string') {
     // Named values: small=80, normal=120, large=160, huge=220, tiny=60
     const named: Record<string, number> = {
@@ -51,9 +51,10 @@ function resolveUnit(val: TikzCdOption['val'], defaultPx: number): number {
     }
     return typeof val === 'string' ? (named[val] ?? defaultPx) : defaultPx
   }
-  // Numeric with unit → convert to px (rough approximation: 1em=16px, 1pt=1.333px, 1cm=37.8px, 1mm=3.78px)
+  // Numeric with unit → convert to px. emPx is caller-controlled so tikzcd
+  // inter-node gaps (column sep / row sep) can use a larger em than body text.
   const scale: Record<string, number> = {
-    em: 16, pt: 1.333, cm: 37.8, mm: 3.78, ex: 8, px: 1,
+    em: emPx, pt: 1.333, cm: 37.8, mm: 3.78, ex: emPx * 0.5, px: 1,
   }
   return val.value * (scale[val.unit] ?? 1)
 }
@@ -64,14 +65,14 @@ export class SvgGenerator {
   constructor(opts: SvgGeneratorOptions = {}) {
     this.opts = {
       renderMath: opts.renderMath ?? ((s) => esc(s)),
-      defaultColSep: opts.defaultColSep ?? 160,
-      defaultRowSep: opts.defaultRowSep ?? 100,
+      defaultColSep: opts.defaultColSep ?? 60,   // inter-node gap; center-to-center = cellWidth + this
+      defaultRowSep: opts.defaultRowSep ?? 50,   // inter-node gap; center-to-center = cellHeight + this
       margin: opts.margin ?? 40,
-      cellWidth: opts.cellWidth ?? 150,
-      cellHeight: opts.cellHeight ?? 44,
-      labelWidth: opts.labelWidth ?? 120,
+      cellWidth: opts.cellWidth ?? 180,
+      cellHeight: opts.cellHeight ?? 48,
+      labelWidth: opts.labelWidth ?? 130,
       labelHeight: opts.labelHeight ?? 28,
-      arrowMargin: opts.arrowMargin ?? 28,
+      arrowGap: opts.arrowGap ?? 6,
       labelOffset: opts.labelOffset ?? 16,
     }
   }
@@ -89,13 +90,20 @@ export class SvgGenerator {
   }
 
   private renderTikzCd(cd: TikzCd): string {
-    const { margin, cellWidth, cellHeight, labelWidth, labelHeight, arrowMargin, labelOffset } = this.opts
+    const { margin, cellWidth, cellHeight, labelWidth, labelHeight, arrowGap, labelOffset } = this.opts
 
-    // Resolve spacing from environment options
+    // In tikz-cd, column/row sep is the *inter-node gap* (space between node borders),
+    // not the center-to-center distance.  We compute:
+    //   colSep (center-to-center) = cellWidth  + inter-node gap
+    //   rowSep (center-to-center) = cellHeight + inter-node gap
+    // 1em in math context ≈ 40px for readable diagrams.
+    const EM = 40
     const colSepOpt = cd._options.find((o) => o.key === 'columnSep')
     const rowSepOpt = cd._options.find((o) => o.key === 'rowSep')
-    const colSep = colSepOpt ? resolveUnit(colSepOpt.val, this.opts.defaultColSep) : this.opts.defaultColSep
-    const rowSep = rowSepOpt ? resolveUnit(rowSepOpt.val, this.opts.defaultRowSep) : this.opts.defaultRowSep
+    const colGap = colSepOpt ? resolveUnit(colSepOpt.val, this.opts.defaultColSep, EM) : this.opts.defaultColSep
+    const rowGap = rowSepOpt ? resolveUnit(rowSepOpt.val, this.opts.defaultRowSep, EM) : this.opts.defaultRowSep
+    const colSep = cellWidth + colGap
+    const rowSep = cellHeight + rowGap
 
     const rows = cd._rows
     const numRows = rows.length
@@ -136,8 +144,19 @@ export class SvgGenerator {
           if (len < 1) return
 
           const nx = dx / len, ny = dy / len
-          const sx = x1 + nx * arrowMargin, sy = y1 + ny * arrowMargin
-          const ex = x2 - nx * arrowMargin, ey = y2 - ny * arrowMargin
+          // Compute where the arrow exits the source node rectangle and
+          // enters the target node rectangle, then add a small gap.
+          const hw = cellWidth / 2, hh = cellHeight / 2
+          const tExit = Math.min(
+            Math.abs(nx) > 1e-9 ? hw / Math.abs(nx) : Infinity,
+            Math.abs(ny) > 1e-9 ? hh / Math.abs(ny) : Infinity,
+          )
+          const tEnter = Math.min(
+            Math.abs(nx) > 1e-9 ? hw / Math.abs(nx) : Infinity,
+            Math.abs(ny) > 1e-9 ? hh / Math.abs(ny) : Infinity,
+          )
+          const sx = x1 + nx * (tExit + arrowGap), sy = y1 + ny * (tExit + arrowGap)
+          const ex = x2 - nx * (tEnter + arrowGap), ey = y2 - ny * (tEnter + arrowGap)
 
           lines.push(
             `<line x1="${sx.toFixed(1)}" y1="${sy.toFixed(1)}" x2="${ex.toFixed(1)}" y2="${ey.toFixed(1)}"`,
